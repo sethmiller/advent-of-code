@@ -19,22 +19,32 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
-		found := map[rune]interface{}{}
-		line := scanner.Text()
-		first := line[0 : len(line)/2]
-		second := line[len(line)/2:]
+		first := scanner.Text()
+		scanner.Scan()
+		second := scanner.Text()
+		scanner.Scan()
+		third := scanner.Text()
 
-		for _, letter := range first {
-			found[letter] = nil
+		runes := []map[rune]interface{}{
+			make(map[rune]interface{}),
+			make(map[rune]interface{}),
+			make(map[rune]interface{}),
 		}
 
-		for _, letter := range second {
-			if _, exists := found[letter]; exists {
-				total += runeToValue(letter)
-				break
+		for pos, bag := range []string{first, second, third} {
+			for _, letter := range bag {
+				runes[pos][letter] = nil
 			}
 		}
 
+		for letter := range runes[0] {
+			_, inBag2 := runes[1][letter]
+			_, inBag3 := runes[2][letter]
+
+			if inBag2 && inBag3 {
+				total += runeToValue(letter)
+			}
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
