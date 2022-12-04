@@ -23,7 +23,9 @@ func main() {
 		bLower, _ := strconv.Atoi(b[0])
 		bUpper, _ := strconv.Atoi(b[1])
 
-		if (aLower >= bLower && aUpper <= bUpper) || (bLower >= aLower && bUpper <= aUpper) {
+		// a includes bLower
+		// b include aLower
+		if (aLower <= bLower && aUpper >= bLower) || (bLower <= aLower && bUpper >= aLower) {
 			count++
 		}
 	}
