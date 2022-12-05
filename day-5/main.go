@@ -28,7 +28,7 @@ func (s *stack[V]) pop() *V {
 		return nil
 	}
 
-	s.head = s.head.next
+	s.head = head.next
 	return head.value
 }
 
@@ -75,8 +75,14 @@ func main() {
 		source, _ := strconv.Atoi(tokens[3])
 		dest, _ := strconv.Atoi(tokens[5])
 
+		temp := &stack[rune]{}
 		for i := 0; i < count; i++ {
-			stacks[dest-1].push(stacks[source-1].pop())
+			temp.push(stacks[source-1].pop())
+		}
+
+		for temp.peek() != nil {
+			ch := temp.pop()
+			stacks[dest-1].push(ch)
 		}
 	}
 
