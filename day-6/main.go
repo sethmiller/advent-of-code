@@ -24,6 +24,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	line := ""
+	offset := 14
 
 	for scanner.Scan() {
 		line = scanner.Text()
@@ -32,9 +33,9 @@ func main() {
 
 	length := len(line)
 
-	for index := range line[:length-4] {
-		if !hasDupes(line[index : index+4]) {
-			fmt.Printf("Offset: %d\n", index+4)
+	for index := range line[:length-offset] {
+		if !hasDupes(line[index : index+offset]) {
+			fmt.Printf("Offset: %d\n", index+offset)
 			break
 		}
 	}
