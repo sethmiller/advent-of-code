@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+const (
+	total_space    = 70_000_000
+	required_space = 30_000_000
+)
+
 type filetype int
 
 const (
@@ -107,14 +112,23 @@ func main() {
 		}
 	}
 
-	sum := 0
 	root.updateSizes()
+	used := root.total
+	free := total_space - used
+	needed := required_space - free
+
+	var found *node
 	root.walk(func(n *node) {
-		fmt.Printf("%s -> %d\n", n.path(), n.size)
-		if n.ft == dir && n.total <= 100_000 {
-			sum += n.total
+		fmt.Printf("%s -> %d\n", n.path(), n.total)
+		if n.ft == dir && n.total >= needed && (found == nil || n.total < found.total) {
+			found = n
 		}
 	})
 
-	fmt.Printf("Sum: %d", sum)
+	fmt.Println()
+	fmt.Printf("Used: %d\n", used)
+	fmt.Printf("Free: %d\n", free)
+	fmt.Printf("Needed: %d\n", needed)
+	fmt.Println()
+	fmt.Printf("Found: (%s, %d)", found.path(), found.total)
 }
