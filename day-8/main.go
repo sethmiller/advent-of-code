@@ -7,14 +7,22 @@ import (
 	"strings"
 )
 
-func clear(height rune, trees string) bool {
-	for _, h := range trees {
+func reverse(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}
+
+func clear(height rune, trees string) int {
+	for i, h := range trees {
 		if h >= height {
-			return false
+			return i + 1
 		}
 	}
 
-	return true
+	return len(trees)
 }
 
 func main() {
@@ -42,39 +50,24 @@ func main() {
 		panic(err)
 	}
 
-	visible := 0
-	rowCount := len(rowOriented)
-	colCount := len(columnOriented)
+	scenic := 0
 	for r, row := range rowOriented {
 		for c, height := range row {
-			if c == 0 || r == 0 || r == rowCount-1 || c == colCount-1 {
-				// Edges
-				visible++
-			} else {
-				// left
-				if clear(height, row[0:c]) {
-					visible++
-					continue
-				}
-				// right
-				if clear(height, row[c+1:]) {
-					visible++
-					continue
-				}
-				// up
-				if clear(height, columnOriented[c][0:r]) {
-					visible++
-					continue
-				}
-				// down
-				if clear(height, columnOriented[c][r+1:]) {
-					visible++
-					continue
-				}
+			score := 1
+			// left
+			score *= clear(height, reverse(row[0:c]))
+			// right
+			score *= clear(height, row[c+1:])
+			// up
+			score *= clear(height, reverse(columnOriented[c][0:r]))
+			// down
+			score *= clear(height, columnOriented[c][r+1:])
 
+			if score > scenic {
+				scenic = score
 			}
 		}
 	}
 
-	fmt.Println(visible)
+	fmt.Println(scenic)
 }
