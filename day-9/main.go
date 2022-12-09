@@ -60,10 +60,26 @@ func (p position) visited() int {
 	return len(p.beenThere)
 }
 
+func New() *position {
+	pos := &position{
+		beenThere: map[string]interface{}{"0,0": nil},
+	}
+
+	return pos
+}
+
 func main() {
 	head := position{}
-	tail := position{
-		beenThere: map[string]interface{}{"0,0": nil},
+	tails := [9]*position{
+		New(),
+		New(),
+		New(),
+		New(),
+		New(),
+		New(),
+		New(),
+		New(),
+		New(),
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -75,7 +91,13 @@ func main() {
 
 		for i := 0; i < distance; i++ {
 			head.move(direction)
-			tail.moveToward(head)
+			for i, tail := range tails {
+				if i == 0 {
+					tail.moveToward(head)
+				} else {
+					tail.moveToward(*tails[i-1])
+				}
+			}
 		}
 	}
 
@@ -84,5 +106,9 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Visited: %d", tail.visited())
+	fmt.Printf("Visited: %d\n", tails[8].visited())
+	fmt.Printf("Head: (%d, %d)\n", head.row, head.column)
+	for i, tail := range tails {
+		fmt.Printf("Tail[%d]: (%d, %d)\n", i, tail.row, tail.column)
+	}
 }
