@@ -12,12 +12,22 @@ var total int = 0
 var cycles = []int{20, 60, 100, 140, 180, 220}
 
 func inc(i *int, pc *int) int {
-	(*pc)++
-	for _, count := range cycles {
-		if *pc == count {
-			return *i * count
-		}
+	// for _, count := range cycles {
+	// 	if *pc == count {
+	// 		return *i * count
+	// 	}
+	// }
+
+	pixel := *pc % 40
+	if pixel == 0 {
+		fmt.Println()
 	}
+	if *i-1 == pixel || *i == pixel || *i+1 == pixel {
+		fmt.Print("#")
+	} else {
+		fmt.Print(".")
+	}
+	(*pc)++
 
 	return 0
 }
@@ -49,6 +59,4 @@ func main() {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 		panic(err)
 	}
-
-	fmt.Printf("Sum: %d\n", sum)
 }
