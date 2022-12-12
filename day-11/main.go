@@ -25,22 +25,70 @@ func (m Monkey) HasStuff() bool {
 	return len(m.items) > 0
 }
 
-func (m *Monkey) Inspect() (int, target) {
+func (m *Monkey) Inspect(ms *Monkeys) (int, target) {
 	m.inspections += 1
 	count := len(m.items)
 	worry := m.items[count-1]
 	m.items = m.items[0 : count-1]
-	worry = m.op(worry) / 3
+
+	worry = m.op(worry) % ms.max
 
 	if worry%m.test == 0 {
+		// return ms.Find(worry), m.yes
 		return worry, m.yes
 	}
 
+	// return Ms.Find(worry), m.no
 	return worry, m.no
 }
 
 func (m *Monkey) ReceiveItem(i int) {
 	m.items = append(m.items, i)
+}
+
+type Monkeys struct {
+	monkeys []*Monkey
+	tests   []int
+	max     int
+}
+
+func NewMonkeys(monkeys []*Monkey) *Monkeys {
+	tests := make([]int, len(monkeys))
+	max := 1
+	for i, m := range monkeys {
+		tests[i] = m.test
+		max *= m.test
+	}
+	return &Monkeys{
+		monkeys: monkeys,
+		tests:   tests,
+		max:     max,
+	}
+}
+
+// This was dumb but I'm leaving it. Big whoop. Wanna fight about it?
+func (m *Monkeys) Find(n int) int {
+	memo := make([]int, len(m.tests))
+	for i, t := range m.tests {
+		memo[i] = n % t
+	}
+
+	needed := len(memo)
+
+	for curr := 0; curr < m.max; curr++ {
+		found := 0
+		for i, t := range m.tests {
+			if n%t != memo[i] {
+				found++
+			}
+		}
+
+		if found == needed {
+			return curr
+		}
+	}
+
+	return n
 }
 
 func parseOp(line string) operation {
@@ -115,6 +163,8 @@ func main() {
 
 	monkeys = append(monkeys, monkey)
 
+	ms := NewMonkeys(monkeys)
+
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 		panic(err)
@@ -125,10 +175,10 @@ func main() {
 		fmt.Println(monk)
 	}
 
-	for round := 0; round < 20; round++ {
+	for round := 0; round < 10000; round++ {
 		for _, monkey := range monkeys {
 			for monkey.HasStuff() {
-				item, target := monkey.Inspect()
+				item, target := monkey.Inspect(ms)
 				//fmt.Printf("Monkey %d looked at %d and will give it to %d\n", i, item, target)
 				monkeys[target].ReceiveItem(item)
 			}
@@ -137,8 +187,9 @@ func main() {
 
 	inspections := make([]int, len(monkeys))
 
-	for _, m := range monkeys {
+	for i, m := range monkeys {
 		inspections = append(inspections, m.inspections)
+		fmt.Printf("Monkey %d => %d\n", i, m.inspections)
 	}
 
 	sort.Sort(sort.Reverse(sort.IntSlice(inspections)))
