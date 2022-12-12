@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 )
 
 type Node struct {
@@ -107,7 +108,6 @@ func aStar(start *Node, end *Node, grid [][]*Node, h func(p *Node, o *Node) floa
 	for len(toVisit) > 0 {
 		current := smallest(toVisit, weightedScores)
 		if end.eq(current) {
-			fmt.Println("Done")
 			return buildPath(current, steps)
 		}
 
@@ -126,13 +126,14 @@ func aStar(start *Node, end *Node, grid [][]*Node, h func(p *Node, o *Node) floa
 		}
 	}
 
-	panic("oh no! We're lost")
+	return nil
 }
 
 func main() {
 	grid := [][]*Node{}
 	row := 0
-	var start, end *Node
+	starts := map[*Node]interface{}{}
+	var end *Node
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -145,8 +146,8 @@ func main() {
 				value:  r,
 			})
 
-			if r == 'S' {
-				start = grid[row][i]
+			if r == 'S' || r == 'a' {
+				starts[grid[row][i]] = nil
 			} else if r == 'E' {
 				end = grid[row][i]
 			}
@@ -159,41 +160,71 @@ func main() {
 		panic(err)
 	}
 
-	path := aStar(start, end, grid, distance)
+	cmd := exec.Command("clear") //Linux example, its tested
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 
-	visualize := make([][]rune, len(grid))
-	for i := range visualize {
-		visualize[i] = make([]rune, len(grid[0]))
-	}
+	// A: Start near `E` and work out
+	// B: Run through them all. Checked memoized paths to see if we've crossed the point before
+	// C: A + B
+	// D: Do a loop. YOLO!
+	// n.b. More chances to get lost. Any `a` we visit while lost can be eliminated.
+	min := math.MaxInt
+	for start := range starts {
+		path := aStar(start, end, grid, distance)
 
-	steps := len(path)
-	for i, step := range path {
-		if i < steps-1 {
-			prev := path[i+1]
-			r := 'V'
-			if prev.row > step.row {
-				r = '^'
-			} else if prev.column > step.column {
-				r = '<'
-			} else if prev.column < step.column {
-				r = '>'
-			}
-
-			visualize[prev.row][prev.column] = r
+		if path == nil {
+			continue
 		}
-	}
 
-	for r, row := range visualize {
-		for c, ch := range row {
-			if ch == 0 {
-				fmt.Print(string(grid[r][c].value))
-			} else {
-				fmt.Print(string(ch))
-			}
+		for _, n := range path {
+			delete(starts, n)
 		}
-		fmt.Println()
+
+		// visualize := make([][]rune, len(grid))
+		// for i := range visualize {
+		// 	visualize[i] = make([]rune, len(grid[0]))
+		// }
+
+		// steps := len(path)
+		// for i, step := range path {
+		// 	if i < steps-1 {
+		// 		prev := path[i+1]
+		// 		r := 'V'
+		// 		if prev.row > step.row {
+		// 			r = '^'
+		// 		} else if prev.column > step.column {
+		// 			r = '<'
+		// 		} else if prev.column < step.column {
+		// 			r = '>'
+		// 		}
+
+		// 		visualize[prev.row][prev.column] = r
+		// 	}
+		// }
+
+		// for r, row := range visualize {
+		// 	for c, ch := range row {
+		// 		if ch == 0 {
+		// 			fmt.Print(string(grid[r][c].value))
+		// 		} else {
+		// 			fmt.Print(string(ch))
+		// 		}
+		// 	}
+		// 	fmt.Println()
+		// }
+
+		// Subtract 1 for since the start square doesn't count
+		if min > len(path)-1 {
+			min = len(path) - 1
+		}
+		fmt.Printf("\rSteps: %d (%d) [%d]", len(path)-1, min, len(starts))
+
+		// cmd := exec.Command("clear") //Linux example, its tested
+		// cmd.Stdout = os.Stdout
+		// cmd.Run()
 	}
 
-	// Subtract 1 for since the start square doesn't count
-	fmt.Printf("Steps: %d\n", len(path)-1)
+	fmt.Printf("Min: %d\n", min)
+
 }
