@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -13,6 +14,14 @@ type node struct {
 	val      *int
 	children *[]*node
 }
+
+type packets []*node
+
+var _ sort.Interface = packets{}
+
+func (p packets) Len() int                  { return len(p) }
+func (p packets) Swap(i, j int)             { p[i], p[j] = p[j], p[i] }
+func (p packets) Less(left, right int) bool { return treeDiff(p[left], p[right]) == Failure }
 
 func (n *node) isChild() bool {
 	return n.val != nil
@@ -157,27 +166,17 @@ func printOriginalInput(tree *node) string {
 }
 
 func main() {
+	p := packets{}
+
 	scanner := bufio.NewScanner(os.Stdin)
-	count := 1
-	sum := 0
 	for scanner.Scan() {
-		left := scanner.Text()
-		leftNodes, _ := parseTree(&left)
-		leftTree := leftNodes[0]
-
-		scanner.Scan()
-		right := scanner.Text()
-		rightNodes, _ := parseTree(&right)
-		rightTree := rightNodes[0]
-
-		comp := treeDiff(leftTree, rightTree)
-		fmt.Printf("%d ==> %d\n\n", count, comp)
-		if comp != Failure {
-			sum += count
+		line := scanner.Text()
+		if len(line) == 0 {
+			continue
 		}
-
-		scanner.Scan()
-		count++
+		nodes, _ := parseTree(&line)
+		tree := nodes[0]
+		p = append(p, tree)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -185,5 +184,11 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Sum: %d\n", sum)
+	sort.Sort(sort.Reverse(p))
+
+	for i, tree := range p {
+		fmt.Printf("%d => %s\n", i+1, printOriginalInput(tree))
+	}
+
+	// fmt.Printf("Sum: %d\n", sum)
 }
