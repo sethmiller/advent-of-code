@@ -5,6 +5,14 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strings"
+)
+
+type side bool
+
+const (
+	left  = false
+	right = true
 )
 
 type line struct {
@@ -36,47 +44,51 @@ func (g *grid) get(r, c int) rune {
 }
 
 func (g *grid) drop(r, c int) bool {
-	next := r
+	start := c
+	this := r
 	for {
-		if next > g.maxRow {
-			return false
-		}
-		if c <= g.minColumn {
+		if c <= g.minColumn+1 {
 			g.grow(left)
-		} else if c > g.maxColumn {
+		} else if c >= g.maxColumn-1 {
 			g.grow(right)
 		}
 
-		switch g.get(next, c) {
+		switch g.get(this+1, c) {
 		case 0:
 		default:
-			if g.get(next, c-1) == 0 {
+			if g.get(this+1, c-1) == 0 {
 				c--
-			} else if g.get(next, c+1) == 0 {
+			} else if g.get(this+1, c+1) == 0 {
 				c++
 			} else {
-				g.set(next-1, c, 'o')
+				if this == r && c == start {
+					return false
+				}
+				g.set(this, c, 'o')
 				return true
 			}
 		}
 
-		next++
+		this++
 	}
 }
 
-type side bool
-
-const (
-	left  = false
-	right = true
-)
-
 func (g *grid) grow(s side) {
+	if s {
+		g.maxColumn++
+	} else {
+		g.minColumn--
+	}
+
 	for r, row := range *g.contents {
-		if s == right {
-			(*g.contents)[r] = append(row, 0)
+		ch := rune(0)
+		if r == len(*g.contents)-1 {
+			ch = '#'
+		}
+		if s {
+			(*g.contents)[r] = append(row, ch)
 		} else {
-			(*g.contents)[r] = append([]rune{0}, row...)
+			(*g.contents)[r] = append([]rune{ch}, row...)
 		}
 	}
 }
@@ -98,11 +110,15 @@ func min(a, b int) int {
 }
 
 func makeGrid(lines []*line, g *grid) *grid {
-	height := g.maxRow + 1
+	height := g.maxRow
 	width := g.maxColumn - g.minColumn
 	grid := make([][]rune, height)
 	for i := 0; i < height; i++ {
-		grid[i] = make([]rune, width+1)
+		if i == height-1 {
+			grid[i] = []rune(strings.Repeat("#", width))
+		} else {
+			grid[i] = make([]rune, width)
+		}
 	}
 
 	g.contents = &grid
@@ -184,9 +200,9 @@ func main() {
 
 	g := makeGrid(lines, &grid{
 		minRow:    minRow,
-		maxRow:    maxRow,
+		maxRow:    maxRow + 3,
 		minColumn: minColumn,
-		maxColumn: maxColumn,
+		maxColumn: maxColumn + 1,
 	})
 
 	count := 0
@@ -210,5 +226,6 @@ func main() {
 		fmt.Println()
 	}
 
-	fmt.Println("Drops: ", count)
+	// Plus one because I'm awful
+	fmt.Println("Drops: ", count+1)
 }
