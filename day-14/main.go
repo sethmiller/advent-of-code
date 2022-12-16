@@ -38,9 +38,13 @@ func (g *grid) get(r, c int) rune {
 func (g *grid) drop(r, c int) bool {
 	next := r
 	for {
-		next++
-		if next > g.maxRow || c <= g.minColumn || c > g.maxColumn {
+		if next > g.maxRow {
 			return false
+		}
+		if c <= g.minColumn {
+			g.grow(left)
+		} else if c > g.maxColumn {
+			g.grow(right)
 		}
 
 		switch g.get(next, c) {
@@ -54,6 +58,25 @@ func (g *grid) drop(r, c int) bool {
 				g.set(next-1, c, 'o')
 				return true
 			}
+		}
+
+		next++
+	}
+}
+
+type side bool
+
+const (
+	left  = false
+	right = true
+)
+
+func (g *grid) grow(s side) {
+	for r, row := range *g.contents {
+		if s == right {
+			(*g.contents)[r] = append(row, 0)
+		} else {
+			(*g.contents)[r] = append([]rune{0}, row...)
 		}
 	}
 }
