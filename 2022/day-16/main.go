@@ -63,7 +63,7 @@ func aStar(start *Node, end *Node, seconds int, h func(p *Node, s int) float64) 
 			if currentScore, found := scores[neighbor]; !found || score < currentScore {
 				steps[neighbor] = current
 				scores[neighbor] = score
-				weightedScores[neighbor] = float64(score) + h(neighbor)
+				// weightedScores[neighbor] = float64(score) + h(neighbor)
 				if _, found := toVisit[neighbor]; !found {
 					toVisit[neighbor] = nil
 				}
@@ -123,7 +123,7 @@ func main() {
 		}
 
 	}
-	steps := aStar(start, nil, value)
+	// steps := aStar(start, nil, value)
 	fmt.Println(nodes)
 
 	if err := scanner.Err(); err != nil {
