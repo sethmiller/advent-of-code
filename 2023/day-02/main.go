@@ -8,10 +8,11 @@ import (
 	"strings"
 )
 
-var colors = map[string]int{
-	"green": 13,
-	"red":   12,
-	"blue":  14,
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func main() {
@@ -20,28 +21,25 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		parts := strings.Split(line, ":")
-		id, _ := strconv.Atoi(strings.Split(parts[0], " ")[1])
 
-		fail := false
 		rounds := strings.Split(parts[1], ";")
-	round:
+		maxes := map[string]int{}
 		for _, round := range rounds {
 			values := strings.Split(round, ",")
 			for _, value := range values {
 				yup := strings.Split(strings.TrimSpace(value), " ")
 				count, _ := strconv.Atoi(yup[0])
 				color := yup[1]
-				if count > colors[color] {
-					fail = true
-					break round
-				}
+				maxes[color] = max(maxes[color], count)
 			}
 		}
 
-		if !fail {
-			sum += id
+		product := 1
+		for _, v := range maxes {
+			product *= v
 		}
 
+		sum += product
 	}
 
 	fmt.Println(sum)
