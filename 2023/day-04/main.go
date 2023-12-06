@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -55,11 +54,27 @@ func split(str string) ([]string, int) {
 	return chunks, n
 }
 
+func inc(vals []int, pos, n, mul int) []int {
+	for i := pos; i < pos+n; i++ {
+		if i >= len(vals) {
+			vals = append(vals, 1)
+		}
+
+		vals[i] = vals[i] + mul
+	}
+
+	return vals
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	sum := 0
+	num := 0
+	cards := []int{}
 	for scanner.Scan() {
 		line := scanner.Text()
+		if len(cards) <= num {
+			cards = append(cards, 1)
+		}
 
 		parts, n := split(line[strings.Index(line, ":"):])
 
@@ -67,16 +82,19 @@ func main() {
 		tries := toSet(parts[n:])
 
 		found := union(winners, tries)
-		fmt.Printf("%d -> (%d) (%d)\n", found, len(winners), len(tries))
-		if len(found) > 0 {
-			sum += int(math.Pow(2, float64(len(found)-1)))
-		}
+		cards = inc(cards, num+1, len(found), cards[num])
+
+		num++
 	}
 
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 		panic(err)
 	}
+	sum := 0
 
+	for _, i := range cards {
+		sum += i
+	}
 	fmt.Println(sum)
 }
