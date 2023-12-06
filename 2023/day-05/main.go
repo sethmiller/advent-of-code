@@ -60,7 +60,6 @@ func main() {
 
 	scanner.Scan()
 	seeds := split(scanner.Text()[6:])
-	// fmt.Println(seeds)
 	scanner.Scan()
 
 	order := 0
@@ -87,7 +86,6 @@ func main() {
 		}
 
 		chapters[order] = ch
-		// fmt.Println(ch)
 		order++
 	}
 
@@ -97,16 +95,24 @@ func main() {
 	}
 
 	min := math.MaxInt
-	for _, seed := range seeds {
-		next := seed
-		for i := 0; i < len(chapters); i++ {
-			ch := chapters[i]
-			next = ch.Dest(next)
+	for i := 0; i < len(seeds); i += 2 {
+		fmt.Println("Next...")
+		start := seeds[i]
+		length := seeds[i+1]
+		// Too dumb to math it; do brute force
+		// Probably want check whole blocks at a time instead of just one. Next year.
+		for j := start; j < start+length; j++ {
+			next := j
+			for c := 0; c < len(chapters); c++ {
+				ch := chapters[c]
+				next = ch.Dest(next)
+			}
+
+			if next < min {
+				min = next
+			}
 		}
 
-		if next < min {
-			min = next
-		}
 	}
 
 	fmt.Println(min)
