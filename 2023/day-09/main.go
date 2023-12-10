@@ -24,12 +24,12 @@ func diff(nums []int) int {
 		}
 	}
 
-	add := 0
+	sub := 0
 	if nonzero {
-		add = diff(diffs)
+		sub = diff(diffs)
 	}
 
-	return add + diffs[len(diffs)-1]
+	return diffs[0] - sub
 }
 
 func split(str string) []int {
@@ -50,7 +50,7 @@ func main() {
 		data := split(scanner.Text())
 		fmt.Println("> ", data)
 
-		i := data[len(data)-1] + diff(data)
+		i := data[0] - diff(data)
 		sum += i
 	}
 
