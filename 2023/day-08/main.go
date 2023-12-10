@@ -140,7 +140,7 @@ func main() {
 	}
 
 	product := 1
-	for k, _ := range p {
+	for k := range p {
 		product *= k
 	}
 
