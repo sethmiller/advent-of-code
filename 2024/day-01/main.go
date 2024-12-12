@@ -3,9 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -32,12 +30,15 @@ func main() {
 		panic(err)
 	}
 
-	sort.Ints(left)
-	sort.Ints(right)
+	rights := map[int]int{}
+
+	for _, v := range right {
+		rights[v]++
+	}
 
 	sum := 0
-	for row, _ := range left {
-		sum += int(math.Abs(float64(left[row] - right[row])))
+	for _, v := range left {
+		sum += v * rights[v]
 	}
 
 	fmt.Println(sum)
