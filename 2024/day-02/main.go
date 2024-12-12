@@ -12,6 +12,43 @@ import (
 const min = 1
 const max = 3
 
+func remove(slice []int, s int) []int {
+	n := make([]int, len(slice)-1)
+
+	index := 0
+	for i, v := range slice {
+		if i != s {
+			n[index] = v
+			index++
+		}
+	}
+
+	return n
+}
+
+func test(levels []int) bool {
+	asc := levels[0]-levels[1] < 0
+	for i := range levels[:len(levels)-1] {
+		delta := levels[i] - levels[i+1]
+
+		if (delta < 0 && !asc) || (delta > 0 && asc) {
+			return false
+		}
+
+		absDelta := int(math.Abs(float64(delta)))
+		if absDelta < min || absDelta > max {
+			return false
+		}
+
+		if i == len(levels)-2 {
+			return true
+		}
+	}
+
+	fmt.Println("unsafe")
+	return false
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	safe := 0
@@ -26,21 +63,16 @@ func main() {
 			levels = append(levels, i)
 		}
 
-		asc := levels[0]-levels[1] < 0
-		for i := range levels[:len(levels)-1] {
-			delta := levels[i] - levels[i+1]
+		if test(levels) {
+			safe++
+			continue
+		}
 
-			if (delta < 0 && !asc) || (delta > 0 && asc) {
-				break
-			}
-
-			absDelta := int(math.Abs(float64(delta)))
-			if absDelta < min || absDelta > max {
-				break
-			}
-
-			if i == len(levels)-2 {
+		for i := range levels {
+			next := remove(levels, i)
+			if test(next) {
 				safe++
+				break
 			}
 		}
 	}
