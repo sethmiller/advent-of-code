@@ -4,52 +4,27 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"regexp"
 )
 
-func reverse(s string) string {
-	rns := []rune(s)
-	for i, j := 0, len(rns)-1; i < j; i, j = i+1, j-1 {
-		rns[i], rns[j] = rns[j], rns[i]
-	}
-
-	return string(rns)
+func check(a rune, b rune) bool {
+	return (a == 'M' && b == 'S') || (a == 'S' && b == 'M')
 }
-
-var xmas = regexp.MustCompile("XMAS")
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	rows := []string{}
-	columns := []string{}
-	var rotateLeft []string
-	var rotateRight []string
+	grid := [][]rune{}
+	row := 0
 	for scanner.Scan() {
 		line := scanner.Text()
-		// fmt.Println(line)
-		rows = append(rows, line)
+		fmt.Println(line)
 
-		height := (2 * len(line)) - 1
-		middle := len(line) - 1
-		row := len(rows) - 1
+		grid = append(grid, make([]rune, len(line)))
 
-		if row == 0 {
-			rotateLeft = make([]string, height)
-			rotateRight = make([]string, height)
-		}
 		for i, ch := range line {
-			if len(columns) <= i {
-				columns = append(columns, "")
-			}
-
-			rotateLeftRow := (middle + row) - i
-			rotateRightRow := row + i
-
-			rotateLeft[rotateLeftRow] = rotateLeft[rotateLeftRow] + string(ch)
-			rotateRight[rotateRightRow] = string(ch) + rotateRight[rotateRightRow]
-
-			columns[i] = columns[i] + string(ch)
+			grid[row][i] = ch
 		}
+
+		row++
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -57,22 +32,32 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(rotateLeft)
-	fmt.Println(rotateRight)
-
 	count := 0
-	for _, dir := range [][]string{rows, columns, rotateLeft, rotateRight} {
-		for _, str := range dir {
-			// fmt.Printf("Checking %s...\n", str)
-			matches := xmas.FindAllStringSubmatch(str, -1)
-			count += len(matches)
+	height := len(grid)
+	for i, line := range grid {
+		width := len(line)
+		for j, ch := range line {
+			if ch == 'A' {
+				if i == 0 || i == width-1 {
+					continue
+				}
+				if j == 0 || j == height-1 {
+					continue
+				}
 
-			// fmt.Printf("Checking %s...\n", reverse(str))
-			matches = xmas.FindAllStringSubmatch(reverse(str), -1)
-			count += len(matches)
+				ul := grid[i-1][j-1]
+				ur := grid[i-1][j+1]
+				ll := grid[i+1][j-1]
+				lr := grid[i+1][j+1]
+
+				if check(ul, lr) && check(ur, ll) {
+					fmt.Printf("(%d, %d)\n", i, j)
+					fmt.Printf("(%c, %c), (%c, %c)\n", ul, ur, ll, lr)
+					count++
+				}
+			}
 		}
 	}
 
 	fmt.Println(count)
-
 }
