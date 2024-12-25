@@ -15,6 +15,12 @@ const (
 	West
 )
 
+type Node struct {
+	x   int
+	y   int
+	dir Dir
+}
+
 func delta(dir Dir) []int {
 	switch dir {
 	case North:
@@ -33,6 +39,46 @@ func delta(dir Dir) []int {
 func print(grid [][]byte) {
 	for _, line := range grid {
 		fmt.Println(string(line))
+	}
+}
+
+func copyGrid(_grid [][]byte) [][]byte {
+	grid := make([][]byte, len(_grid))
+	for i, line := range _grid {
+		grid[i] = make([]byte, len(line))
+		copy(grid[i], line)
+	}
+
+	return grid
+}
+
+func loops(grid [][]byte, x, y int) bool {
+	visited := map[Node]interface{}{}
+	dir := North
+	width := len(grid[0])
+	height := len(grid)
+	for {
+		deltas := delta(dir)
+		nextX := x + deltas[0]
+		nextY := y + deltas[1]
+		node := Node{x: nextX, y: nextY, dir: dir}
+		if _, exists := visited[node]; exists {
+			return true
+		}
+
+		visited[node] = nil
+		if nextX < 0 || nextX >= width || nextY < 0 || nextY >= height {
+			return false
+		}
+
+		next := grid[nextY][nextX]
+		if next == '#' || next == 'O' {
+			dir = (dir + 1) % 4
+			continue
+		}
+
+		x = nextX
+		y = nextY
 	}
 }
 
@@ -61,6 +107,9 @@ func main() {
 
 	fmt.Printf("Found start at (%d, %d)\n", x, y)
 
+	orig := copyGrid(grid)
+	startX := x
+	startY := y
 	width := len(grid[0])
 	height := len(grid)
 	count := 0
@@ -70,7 +119,13 @@ func main() {
 		nextY := y + deltas[1]
 		if nextX < 0 || nextX >= width || nextY < 0 || nextY >= height {
 			grid[y][x] = 'X'
-			count++
+			blocked := copyGrid(orig)
+			blocked[y][x] = 'O'
+			if loops(blocked, startX, startY) {
+				count++
+				// print(blocked)
+				// fmt.Println()
+			}
 			break
 		}
 
@@ -83,13 +138,17 @@ func main() {
 		current := grid[y][x]
 		if current != 'X' {
 			grid[y][x] = 'X'
-			count++
+			blocked := copyGrid(orig)
+			blocked[y][x] = 'O'
+			if loops(blocked, startX, startY) {
+				count++
+				// print(blocked)
+				// fmt.Println()
+			}
 		}
 		x = nextX
 		y = nextY
 	}
-
-	print(grid)
 
 	fmt.Println(count)
 }
