@@ -24,7 +24,7 @@ func returnOrCreate(node *Page, val string) *Page {
 	return node
 }
 
-func containsAll(page *Page, after []string) bool {
+func inOrder(page *Page, after []string) bool {
 	for _, val := range after {
 		// fmt.Printf("Checking %s for %s\n", page.val, val)
 		found := false
@@ -44,18 +44,20 @@ func containsAll(page *Page, after []string) bool {
 	return true
 }
 
-func containsNone(page *Page, after []string) bool {
-	for _, val := range after {
-		// fmt.Printf("Checking %s -> %s\n", page.val, val)
-		for _, child := range page.after {
-			if child.val == val {
-				// fmt.Printf("%s did not containNone\n", page.val)
-				return false
-			}
+func swap(arr []string, i int, j int) {
+	memo := arr[i]
+	arr[i] = arr[j]
+	arr[j] = memo
+}
+
+func changed(before, after []string) bool {
+	for i, val := range before {
+		if val != after[i] {
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 func main() {
@@ -82,28 +84,34 @@ func main() {
 	}
 
 	sum := 0
-books:
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		fmt.Println(line)
 
 		pages := strings.Split(line, ",")
-		for i, page := range pages {
-			if i < len(pages)-1 && !containsAll(nodes[page], pages[i+1:]) {
-				fmt.Println("nope")
-				continue books
-			}
+		fixed := true
 
-			// This isn't doing anything, apparently
-			if i > 1 && !containsNone(nodes[page], pages[:i]) {
-				fmt.Println("noper")
-				continue books
+		before := make([]string, len(pages))
+		copy(before, pages)
+		for fixed {
+			fixed = false
+			for i := 0; i < len(pages); i++ {
+				page := pages[i]
+				if i < len(pages)-1 && !inOrder(nodes[page], pages[i+1:]) {
+					fmt.Println("nope")
+					swap(pages, i, i+1)
+					fixed = true
+				}
 			}
 		}
 
-		fmt.Println("yup")
-		middle, _ := strconv.Atoi(pages[(len(pages) / 2)])
-		sum += middle
+		if changed(before, pages) {
+			fmt.Println("yup")
+			fmt.Println(pages)
+			middle, _ := strconv.Atoi(pages[(len(pages) / 2)])
+			sum += middle
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
