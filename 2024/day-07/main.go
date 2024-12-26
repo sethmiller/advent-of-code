@@ -8,13 +8,6 @@ import (
 	"strings"
 )
 
-type Operand = int
-
-const (
-	Multiply Operand = iota
-	Add
-)
-
 func atoi(str string) int64 {
 	i, _ := strconv.ParseInt(str, 10, 64)
 
@@ -33,9 +26,10 @@ func atoiAll(strs []string) []int64 {
 func resolves(answer int64, parts []int64, total int64) bool {
 	product := total * parts[0]
 	sum := total + parts[0]
+	concat := atoi(fmt.Sprintf("%d%d", total, parts[0]))
 
 	if len(parts) == 1 {
-		if product == answer || sum == answer {
+		if product == answer || sum == answer || concat == answer {
 			return true
 		}
 	} else {
@@ -44,6 +38,10 @@ func resolves(answer int64, parts []int64, total int64) bool {
 		}
 
 		if resolves(answer, parts[1:], sum) {
+			return true
+		}
+
+		if resolves(answer, parts[1:], concat) {
 			return true
 		}
 	}
