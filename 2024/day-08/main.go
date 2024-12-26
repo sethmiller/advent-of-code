@@ -28,6 +28,25 @@ func add(points map[Point]interface{}, p Point, w int, h int) {
 	points[p] = nil
 }
 
+func addAll(points map[Point]interface{}, p Point, dx int, dy int, w int, h int) {
+	x := p.x
+	y := p.y
+
+	for x >= 0 && x < w && y >= 0 && y < h {
+		add(points, Point{x: x, y: y}, w, h)
+		x -= dx
+		y -= dy
+	}
+
+	x = p.x
+	y = p.y
+	for x >= 0 && x < w && y >= 0 && y < h {
+		add(points, Point{x: x, y: y}, w, h)
+		x += dx
+		y += dy
+	}
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	grid := []string{}
@@ -63,15 +82,8 @@ func main() {
 				dx := points[j].x - points[i].x
 				dy := points[j].y - points[i].y
 
-				x1 := points[i].x - dx
-				y1 := points[i].y - dy
-				add(antinodes, Point{x: x1, y: y1}, width, height)
-
-				x2 := points[j].x + dx
-				y2 := points[j].y + dy
-				add(antinodes, Point{x: x2, y: y2}, width, height)
+				addAll(antinodes, points[j], dx, dy, width, height)
 			}
-
 		}
 	}
 
