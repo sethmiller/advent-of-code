@@ -29,7 +29,7 @@ func checksum(vals []int) int {
 	sum := 0
 	for i, val := range vals {
 		if val == EMPTY {
-			break
+			continue
 		}
 		sum += i * val
 	}
@@ -37,13 +37,13 @@ func checksum(vals []int) int {
 	return sum
 }
 
-func expand(disk []int) []int {
+func expand(layout []int) []int {
 	expanded := []int{}
-	for i := 0; i < len(disk); {
+	for i := 0; i < len(layout); {
 		index := i / 2
-		size := disk[i]
+		size := layout[i]
 		i++
-		blank := disk[i]
+		blank := layout[i]
 		i++
 
 		for j := 0; j < size; j++ {
@@ -58,24 +58,64 @@ func expand(disk []int) []int {
 	return expanded
 }
 
-func defrag(disk []int) []int {
-	last := 0
-	defraged := make([]int, len(disk))
-	for i := range defraged {
-		defraged[i] = -1
+func findGap(disk []int, size int, stop int) int {
+	count := 0
+	for i := 0; i <= stop; i++ {
+		val := disk[i]
+		if val != EMPTY && count >= size {
+			return i - count
+		}
+
+		if val != EMPTY {
+			count = 0
+		}
+
+		if val == EMPTY {
+			count++
+		}
 	}
-	for i := len(disk) - 1; i >= 0; i-- {
-		if disk[i] == EMPTY {
+
+	return -1
+}
+
+func print(disk []int) string {
+	str := ""
+	for _, val := range disk {
+		ch := fmt.Sprintf("%d", val)
+
+		if val == EMPTY {
+			ch = "."
+		}
+		str += ch
+	}
+
+	return str
+}
+
+func defrag(disk []int, layout []int) []int {
+	defraged := make([]int, len(disk))
+	copy(defraged, disk)
+
+	fromEnd := len(defraged)
+	for i := len(layout) - 1; i >= 0; {
+		sourceBlank := layout[i]
+		i--
+		sourceSize := layout[i]
+		i--
+
+		fromEnd -= sourceBlank + sourceSize
+
+		fromStart := findGap(defraged, sourceSize, fromEnd)
+		if fromStart == EMPTY {
 			continue
 		}
-		for j := last; j <= i; j++ {
-			if disk[j] == EMPTY {
-				defraged[j] = disk[i]
-				last = j + 1
-				break
-			}
-			defraged[j] = disk[j]
+
+		for m := 0; m < sourceSize; m++ {
+			// fmt.Printf("moving %d from %d to %d\n", defraged[fromEnd+m], fromStart+m, fromEnd+m)
+			defraged[fromStart+m] = defraged[fromEnd+m]
+			defraged[fromEnd+m] = -1
 		}
+		//fmt.Println(print(defraged))
 	}
 
 	return defraged
@@ -94,12 +134,12 @@ func main() {
 
 	line += "0"
 
-	disk := atoiAll(strings.Split(line, ""))
+	layout := atoiAll(strings.Split(line, ""))
 
-	expanded := expand(disk)
-	fmt.Println(expanded)
-	defraged := defrag(expanded)
-	fmt.Println(defraged)
+	disk := expand(layout)
+	fmt.Println(print(disk))
+	defraged := defrag(disk, layout)
+	//fmt.Println(print(defraged))
 	sum := checksum(defraged)
 
 	fmt.Println(sum)
