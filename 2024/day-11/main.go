@@ -8,10 +8,20 @@ import (
 	"strings"
 )
 
-func atoitoa(str string) string {
-	i, _ := strconv.Atoi(str)
+type record struct {
+	stone string
+	depth int
+}
 
-	return fmt.Sprintf("%d", i)
+var memo = map[record]int{}
+
+func trimOrZero(str string) string {
+	trimmed := strings.TrimLeft(str, "0")
+
+	if len(trimmed) == 0 {
+		return "0"
+	}
+	return trimmed
 }
 
 func mul(str string, times int) string {
@@ -20,27 +30,41 @@ func mul(str string, times int) string {
 	return fmt.Sprintf("%d", i*times)
 }
 
+func dfs(stone string, depth int) int {
+	if depth == 0 {
+		return 1
+	}
+	if val, exists := memo[record{stone: stone, depth: depth}]; exists {
+		return val
+	}
+
+	var val int
+
+	if stone == "0" {
+		val = dfs("1", depth-1)
+	} else if len(stone)%2 == 0 {
+		val = dfs(trimOrZero((stone[len(stone)/2:])), depth-1) + dfs(stone[0:len(stone)/2], depth-1)
+	} else {
+		val = dfs(mul(stone, 2024), depth-1)
+	}
+
+	memo[record{stone: stone, depth: depth}] = val
+
+	return val
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
-	stones := strings.Split(scanner.Text(), " ")
-	fmt.Println(stones)
+	fullset := strings.Split(scanner.Text(), " ")
+	fmt.Println(fullset)
 
-	for i := 0; i < 25; i++ {
-		updated := []string{}
-		for _, stone := range stones {
-			if stone == "0" {
-				updated = append(updated, "1")
-			} else if len(stone)%2 == 0 {
-				updated = append(updated, stone[0:len(stone)/2])
-				updated = append(updated, atoitoa((stone[len(stone)/2:])))
-			} else {
-				updated = append(updated, mul(stone, 2024))
-			}
-		}
-
-		stones = updated
+	length := 0
+	for _, next := range fullset {
+		fmt.Println(next)
+		length += dfs(next, 75)
 	}
 
-	fmt.Println(len(stones))
+	fmt.Println()
+	fmt.Println(length)
 }
